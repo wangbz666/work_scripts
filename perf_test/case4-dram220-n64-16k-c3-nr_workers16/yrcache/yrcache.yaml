@@ -23,7 +23,7 @@ local_disk_cache_config:
   gc_op_space_cap_pct: 20
   checkpoint_interval_ms: 2000
   local_disks:
-  - /test/data_disk_1/case2-yrcache:100
+  - /test/data_disk_1/case4-yrcache:100
   cache_policy:
     get_policy: 1
     return_policy: 1

@@ -1,11 +1,11 @@
 export CUDA_VISIBLE_DEVICES=0
 export PYTHONHASHSEED=0
 export PYTHONUNBUFFERED=1
-export PROMETHEUS_MULTIPROC_DIR=/mooncake_test/lmcache_export
+export PROMETHEUS_MULTIPROC_DIR=/test/lmcache_export
 
-mkdir -p /mooncake_test/lmcache_logs /mooncake_test/lmcache_export
+mkdir -p /test/lmcache_logs /test/lmcache_export
 
-/mooncake_test/venv/bin/vllm serve \
+/test/venv/bin/vllm serve \
   /workspaces/modelscope-yrcache/modelscope/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B \
   --max-model-len auto \
   --port 8000 \

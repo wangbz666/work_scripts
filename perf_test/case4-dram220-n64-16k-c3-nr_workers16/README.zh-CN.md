@@ -65,14 +65,14 @@ case4-dram220-n64-16k-c3-nr_workers16/
 
 `LMCACHE_ROOT` 仍指向定制源码，不要改为本 case 的 `lmcache` 目录。包装脚本会校验 `l2_io.py` 等模块和 Python 3.12 的原生扩展；缺失时需补齐对应构建，不能仅用普通 LMCache 安装包替代。
 
-原 LMCache 缓存目录为 `/test/data_disk/case2-lmcache`，L1 配置为 220 GiB。若修改 server 的 5555 端口，需同步修改 vLLM 脚本中 `lmcache.mp.port`。
+原 LMCache 缓存目录为 `/test/data_disk/case4-lmcache`，L1 配置为 220 GiB。若修改 server 的 5555 端口，需同步修改 vLLM 脚本中 `lmcache.mp.port`。
 
 ### 2.3 YRCache 配置
 
 | 文件 | 需要核对或修改的内容 |
 | --- | --- |
 | `yrcache/start_yrcache_vllm_1_9.sh` | `PROMETHEUS_MULTIPROC_DIR` 指向可写的指标目录；提前创建该目录 |
-| `yrcache/yrcache.yaml` | `local_disk_cache_config.local_disks` 改为实际缓存目录和容量；原值为 `/test/data_disk_1/case2-yrcache:100`，其中 `:100` 表示磁盘百分比（100%），不是 100 GiB |
+| `yrcache/yrcache.yaml` | `local_disk_cache_config.local_disks` 改为实际缓存目录和容量；原值为 `/test/data_disk_1/case4-yrcache:100`，其中 `:100` 表示磁盘百分比（100%），不是 100 GiB |
 | 同上 | 按可用内存核对 `cpu_cache_config`；原值为 `max_cpu_memory_size: 232`、`reserve_memory_size: 12` |
 
 本用例保持 `enable_local_disk_cache: true`、`enable_shared_storage_cache: false`。共享存储段里的 Redis 等配置不参与本次测试。
@@ -86,8 +86,8 @@ case4-dram220-n64-16k-c3-nr_workers16/
 先确认旧的 LMCache/vLLM 实例已停止。以下删除命令只用于专用测试缓存目录，**填充与正式测试之间不能再执行**。
 
 ```bash
-mkdir -p /test/data_disk/case2-lmcache
-rm -rf /test/data_disk/case2-lmcache/*
+mkdir -p /test/data_disk/case4-lmcache
+rm -rf /test/data_disk/case4-lmcache/*
 ```
 
 ### 3.2 启动 LMCache 和 vLLM
@@ -149,8 +149,8 @@ bash /workspaces/case4-dram220-n64-16k-c3-nr_workers16/evalscope/n64-16k-c3-pres
 确认旧实例已经停止。仅第一轮填充前清理，目录必须是专用测试目录。
 
 ```bash
-mkdir -p /test/data_disk_1/case2-yrcache
-rm -rf /test/data_disk_1/case2-yrcache/*
+mkdir -p /test/data_disk_1/case4-yrcache
+rm -rf /test/data_disk_1/case4-yrcache/*
 ```
 
 ### 4.2 启动 YRCache + vLLM

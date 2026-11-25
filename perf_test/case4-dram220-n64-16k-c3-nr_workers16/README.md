@@ -16,15 +16,15 @@ The reference setup uses LMCache 0.5.3 (custom build with I/O metrics), YRCache 
 | Model and tokenizer | Match the model in both vLLM launchers to `TOKENIZER_PATH` in the EvalScope script. Match `--served-model-name` to `MODEL` (default `deepseek-14b`). |
 | API and GPU | Update `WARMUP_URL`, `PRESTRESS_URL`, `TEST_URL` and the readiness checks. The launchers use GPU 0, port 8000 and tensor parallel size 1. |
 | LMCache | In both metrics wrappers, set `LMCACHE_ROOT` to the custom source tree and `PYTHON_BIN` to its interpreter. The wrappers check the metrics modules and Python 3.12 native extension. In `lmcache/start_lmcache.sh`, check the numactl path, NUMA node and L2 adapter's disk path. Keep L1 at 220 GiB. Match server port 5555 to `lmcache.mp.port` in the vLLM launcher. Ensure the log and metrics directories are writable. |
-| YRCache | In `yrcache/yrcache.yaml`, keep the CPU cache settings at 232 total and 12 reserved. Set `local_disk_cache_config.local_disks` for your disk. The suffix in `/test/data_disk_1/case2-yrcache:100` is a disk percentage (100%), not a GiB limit. Enable local disk caching and disable shared storage caching. Create a writable `PROMETHEUS_MULTIPROC_DIR` for the launcher. |
+| YRCache | In `yrcache/yrcache.yaml`, keep the CPU cache settings at 232 total and 12 reserved. Set `local_disk_cache_config.local_disks` for your disk. The suffix in `/test/data_disk_1/case4-yrcache:100` is a disk percentage (100%), not a GiB limit. Enable local disk caching and disable shared storage caching. Create a writable `PROMETHEUS_MULTIPROC_DIR` for the launcher. |
 
 ## LMCache
 
 1. Stop any previous test instance. Clear **only the dedicated benchmark cache**, once before the fill pass.
 
 ```bash
-mkdir -p /test/data_disk/case2-lmcache
-rm -rf /test/data_disk/case2-lmcache/*
+mkdir -p /test/data_disk/case4-lmcache
+rm -rf /test/data_disk/case4-lmcache/*
 ```
 
 2. Start LMCache in terminal A. Keep it running.
@@ -71,8 +71,8 @@ Save the results and corresponding cache logs, then stop both services before sw
 1. Stop the previous test instance. Clear only the dedicated cache before the fill pass.
 
 ```bash
-mkdir -p /test/data_disk_1/case2-yrcache
-rm -rf /test/data_disk_1/case2-yrcache/*
+mkdir -p /test/data_disk_1/case4-yrcache
+rm -rf /test/data_disk_1/case4-yrcache/*
 ```
 
 2. Start vLLM with YRCacheConnector. The launcher returns immediately. Check the timestamped log in the launch directory and wait for the model to appear.

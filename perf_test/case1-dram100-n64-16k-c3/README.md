@@ -10,19 +10,19 @@ The reference setup uses LMCache 0.5.3 (custom build with I/O metrics), YRCache 
 
 | Setting | Where to check |
 | --- | --- |
-| Python environment | Replace `/mooncake_test/venv` in the LMCache launchers and activation commands. Run vLLM and EvalScope in the intended environment. |
+| Python environment | Replace `/test/venv` in the LMCache launchers and activation commands. Run vLLM and EvalScope in the intended environment. |
 | Model and tokenizer | Match the model in both vLLM launchers to `TOKENIZER_PATH` in the EvalScope script. Match `--served-model-name` to `MODEL` (default `deepseek-14b`). |
 | API and GPU | Update `WARMUP_URL`, `PRESTRESS_URL`, `TEST_URL` and the readiness checks. The launchers use GPU 0, port 8000 and tensor parallel size 1. |
 | LMCache | In both metrics wrappers, set `LMCACHE_ROOT` to the custom source tree and `PYTHON_BIN` to its interpreter. The wrappers check the metrics modules and Python 3.12 native extension. In `lmcache/start_lmcache.sh`, check the numactl path, NUMA node and L2 adapter's disk path. Keep L1 at 100 GiB. Match server port 5555 to `lmcache.mp.port` in the vLLM launcher. Ensure the log and metrics directories are writable. |
-| YRCache | In `yrcache/yrcache.yaml`, keep the CPU cache settings at 112 total and 12 reserved. Set `local_disk_cache_config.local_disks` for your disk. The suffix in `/mooncake_test/data_disk_1/qyj:100` specifies capacity. Enable local disk caching and disable shared storage caching. Create a writable `PROMETHEUS_MULTIPROC_DIR` for the launcher. |
+| YRCache | In `yrcache/yrcache.yaml`, keep the CPU cache settings at 112 total and 12 reserved. Set `local_disk_cache_config.local_disks` for your disk. The suffix in `/test/data_disk_1/case1-yrcache:100` specifies capacity. Enable local disk caching and disable shared storage caching. Create a writable `PROMETHEUS_MULTIPROC_DIR` for the launcher. |
 
 ## LMCache
 
 1. Stop any previous test instance. Clear **only the dedicated benchmark cache**, once before the fill pass.
 
 ```bash
-mkdir -p /mooncake_test/data_disk/lmcache
-rm -rf /mooncake_test/data_disk/lmcache/*
+mkdir -p /test/data_disk/case1-lmcache
+rm -rf /test/data_disk/case1-lmcache/*
 ```
 
 2. Start LMCache in terminal A. Keep it running.
@@ -35,7 +35,7 @@ bash start_lmcache_io_metrics.sh
 3. Start vLLM in terminal B. Keep it running.
 
 ```bash
-source /mooncake_test/venv/bin/activate
+source /test/venv/bin/activate
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/lmcache
 bash start_lmcache_vllm_io_metrics.sh
 ```
@@ -47,7 +47,7 @@ curl -f http://192.168.255.85:8000/v1/models
 ```
 
 ```bash
-source /mooncake_test/venv/bin/activate
+source /test/venv/bin/activate
 mkdir -p /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/lmcache-fill
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/lmcache-fill
 bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-16k-c3-prestress_test.sh
@@ -56,7 +56,7 @@ bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-1
 5. Confirm all 64 requests succeeded and disk writes finished without errors. Stop vLLM in B with Ctrl+C, then stop LMCache in A. Wait for their workers to exit. **Keep the disk data** and repeat steps 2–4 through the API readiness check only. Run the measurement below.
 
 ```bash
-source /mooncake_test/venv/bin/activate
+source /test/venv/bin/activate
 mkdir -p /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/lmcache-disk-hit
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/lmcache-disk-hit
 bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-16k-c3-prestress_test.sh
@@ -69,15 +69,15 @@ Save the results and corresponding cache logs, then stop both services before sw
 1. Stop the previous test instance. Clear only the dedicated cache before the fill pass.
 
 ```bash
-mkdir -p /mooncake_test/data_disk_1/qyj
-rm -rf /mooncake_test/data_disk_1/qyj/*
+mkdir -p /test/data_disk_1/case1-yrcache
+rm -rf /test/data_disk_1/case1-yrcache/*
 ```
 
 2. Start vLLM with YRCacheConnector. The launcher returns immediately. Check the timestamped log in the launch directory and wait for the model to appear.
 
 ```bash
-source /mooncake_test/venv/bin/activate
-mkdir -p /mooncake_test/yrcache_export
+source /test/venv/bin/activate
+mkdir -p /test/yrcache_export
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/yrcache
 bash start_yrcache_vllm_1_9.sh
 ```
@@ -89,7 +89,7 @@ curl -f http://192.168.255.85:8000/v1/models
 3. Run the fill pass.
 
 ```bash
-source /mooncake_test/venv/bin/activate
+source /test/venv/bin/activate
 mkdir -p /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/yrcache-fill
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/yrcache-fill
 bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-16k-c3-prestress_test.sh
@@ -104,7 +104,7 @@ ps -eo pid,ppid,args --forest | grep -E '[v]llm|[y]rcache'
 Send `kill -TERM <PID>` to its main process and wait for its workers to exit. Check GPU usage with `nvidia-smi`. **Keep the disk data**, repeat step 2, then measure.
 
 ```bash
-source /mooncake_test/venv/bin/activate
+source /test/venv/bin/activate
 mkdir -p /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/yrcache-disk-hit
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/yrcache-disk-hit
 bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-16k-c3-prestress_test.sh

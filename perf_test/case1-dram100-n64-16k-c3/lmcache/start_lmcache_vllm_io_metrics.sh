@@ -3,8 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
-LMCACHE_ROOT="/mooncake_test/workdir/lmcache-io-metrics-0.5.3/lmcache-0.5.3"
-PYTHON_BIN="/mooncake_test/venv/bin/python3"
+LMCACHE_ROOT="/test/workdir/lmcache-io-metrics-0.5.3/lmcache-0.5.3"
+PYTHON_BIN="/test/venv/bin/python3"
 
 export PYTHONPATH="${LMCACHE_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 

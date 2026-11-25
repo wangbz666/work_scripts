@@ -2,7 +2,7 @@
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 YRCACHE_CONFIG_FILE="${SCRIPT_DIR}/yrcache.yaml" \
-PROMETHEUS_MULTIPROC_DIR=/mooncake_test/yrcache_export \
+PROMETHEUS_MULTIPROC_DIR=/test/yrcache_export \
 LLM_USE_MODELSCOPE=True \
 YRCACHE_LOG_LEVEL=INFO \
 CUDA_VISIBLE_DEVICES=0 \

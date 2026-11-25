@@ -47,7 +47,7 @@ case1-dram100-n64-16k-c3/
 
 | 需要核对的内容 | 修改位置 | 修改说明 |
 | --- | --- | --- |
-| Python 虚拟环境 | LMCache 四个启动脚本中的 `/mooncake_test/venv`；本文的 `source` 命令 | 改为实际虚拟环境路径。YRCache 的 `vllm` 和压测的 `evalscope` 从激活后的环境中调用 |
+| Python 虚拟环境 | LMCache 四个启动脚本中的 `/test/venv`；本文的 `source` 命令 | 改为实际虚拟环境路径。YRCache 的 `vllm` 和压测的 `evalscope` 从激活后的环境中调用 |
 | 模型路径 | `lmcache/start_lmcache_vllm.sh`、`yrcache/start_yrcache_vllm_1_9.sh` 中的 `vllm serve` 参数；压测脚本中的 `TOKENIZER_PATH` | 默认 `/workspaces/modelscope-yrcache/modelscope/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B`，三处必须使用匹配的模型和 tokenizer |
 | API 地址 | 压测脚本中的 `WARMUP_URL`、`PRESTRESS_URL`、`TEST_URL` | 默认 `http://192.168.255.85:8000/v1/chat/completions`，改为实际服务 IP 和端口 |
 | 服务模型名 | 两个 vLLM 启动脚本中的 `--served-model-name`，压测脚本中的 `MODEL` | 默认均为 `deepseek-14b`，如修改必须保持一致 |
@@ -63,14 +63,14 @@ case1-dram100-n64-16k-c3/
 
 `LMCACHE_ROOT` 仍指向定制源码，不要改为本 case 的 `lmcache` 目录。包装脚本会校验 `l2_io.py` 等模块和 Python 3.12 的原生扩展；缺失时需补齐对应构建，不能仅用普通 LMCache 安装包替代。
 
-原 LMCache 缓存目录为 `/mooncake_test/data_disk/lmcache`，L1 配置为 100 GiB。若修改 server 的 5555 端口，需同步修改 vLLM 脚本中 `lmcache.mp.port`。
+原 LMCache 缓存目录为 `/test/data_disk/case1-lmcache`，L1 配置为 100 GiB。若修改 server 的 5555 端口，需同步修改 vLLM 脚本中 `lmcache.mp.port`。
 
 ### 2.3 YRCache 配置
 
 | 文件 | 需要核对或修改的内容 |
 | --- | --- |
 | `yrcache/start_yrcache_vllm_1_9.sh` | `PROMETHEUS_MULTIPROC_DIR` 指向可写的指标目录；提前创建该目录 |
-| `yrcache/yrcache.yaml` | `local_disk_cache_config.local_disks` 改为实际缓存目录和容量；原值为 `/mooncake_test/data_disk_1/qyj:100`，其中 `:100` 是容量配置，不是路径的一部分 |
+| `yrcache/yrcache.yaml` | `local_disk_cache_config.local_disks` 改为实际缓存目录和容量；原值为 `/test/data_disk_1/case1-yrcache:100`，其中 `:100` 是容量配置，不是路径的一部分 |
 | 同上 | 按可用内存核对 `cpu_cache_config`；原值为 `max_cpu_memory_size: 112`、`reserve_memory_size: 12` |
 
 本用例保持 `enable_local_disk_cache: true`、`enable_shared_storage_cache: false`。共享存储段里的 Redis 等配置不参与本次测试。
@@ -84,8 +84,8 @@ case1-dram100-n64-16k-c3/
 先确认旧的 LMCache/vLLM 实例已停止。以下删除命令只用于专用测试缓存目录，**填充与正式测试之间不能再执行**。
 
 ```bash
-mkdir -p /mooncake_test/data_disk/lmcache
-rm -rf /mooncake_test/data_disk/lmcache/*
+mkdir -p /test/data_disk/case1-lmcache
+rm -rf /test/data_disk/case1-lmcache/*
 ```
 
 ### 3.2 启动 LMCache 和 vLLM
@@ -100,7 +100,7 @@ bash start_lmcache_io_metrics.sh
 确认 LMCache 启动成功后，在终端 B 启动 vLLM，保持终端运行：
 
 ```bash
-source /mooncake_test/venv/bin/activate
+source /test/venv/bin/activate
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/lmcache
 bash start_lmcache_vllm_io_metrics.sh
 ```
@@ -116,7 +116,7 @@ curl -f http://192.168.255.85:8000/v1/models
 在终端 C 执行，结果保存在 `results/lmcache-fill`：
 
 ```bash
-source /mooncake_test/venv/bin/activate
+source /test/venv/bin/activate
 mkdir -p /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/lmcache-fill
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/lmcache-fill
 bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-16k-c3-prestress_test.sh
@@ -132,7 +132,7 @@ bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-1
 ### 3.5 第二轮：正式测量
 
 ```bash
-source /mooncake_test/venv/bin/activate
+source /test/venv/bin/activate
 mkdir -p /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/lmcache-disk-hit
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/lmcache-disk-hit
 bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-16k-c3-prestress_test.sh
@@ -147,15 +147,15 @@ bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-1
 确认旧实例已经停止。仅第一轮填充前清理，目录必须是专用测试目录。
 
 ```bash
-mkdir -p /mooncake_test/data_disk_1/qyj
-rm -rf /mooncake_test/data_disk_1/qyj/*
+mkdir -p /test/data_disk_1/case1-yrcache
+rm -rf /test/data_disk_1/case1-yrcache/*
 ```
 
 ### 4.2 启动 YRCache + vLLM
 
 ```bash
-source /mooncake_test/venv/bin/activate
-mkdir -p /mooncake_test/yrcache_export
+source /test/venv/bin/activate
+mkdir -p /test/yrcache_export
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/yrcache
 bash start_yrcache_vllm_1_9.sh
 ```
@@ -169,7 +169,7 @@ curl -f http://192.168.255.85:8000/v1/models
 ### 4.3 第一轮：填充缓存
 
 ```bash
-source /mooncake_test/venv/bin/activate
+source /test/venv/bin/activate
 mkdir -p /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/yrcache-fill
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/yrcache-fill
 bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-16k-c3-prestress_test.sh
@@ -192,7 +192,7 @@ ps -eo pid,ppid,args --forest | grep -E '[v]llm|[y]rcache'
 ### 4.5 第二轮：正式测量
 
 ```bash
-source /mooncake_test/venv/bin/activate
+source /test/venv/bin/activate
 mkdir -p /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/yrcache-disk-hit
 cd /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/results/yrcache-disk-hit
 bash /workspaces/work_scripts/perf_test/case1-dram100-n64-16k-c3/evalscope/n64-16k-c3-prestress_test.sh

@@ -23,7 +23,7 @@ export OMP_NUM_THREADS=4
   --l2-prefetch-max-in-flight 8 \
   --l2-adapter '{
     "type": "fs_native",
-    "base_path": "/test/data_disk/case2-lmcache",
+    "base_path": "/test/data_disk/case4-lmcache",
     "num_workers": 16,
     "use_odirect": true,
     "max_capacity_gb": 0,
